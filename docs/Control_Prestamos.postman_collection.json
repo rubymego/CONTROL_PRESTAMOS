@@ -1,0 +1,123 @@
+{
+  "info": {
+    "_postman_id": "0d8c311d-9510-4a2d-bd01-2f650c863e27",
+    "name": "Control de Préstamos de Laboratorio",
+    "description": "Pruebas de autenticación, equipos y préstamos. Ejecutar en orden contra datos de prueba sembrados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "equipoId", "value": "2" },
+    { "key": "prestamoId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Protección sin token (401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/equipos"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Responde 401 sin token', function () { pm.response.to.have.status(401); });"] } }]
+    },
+    {
+      "name": "2. Login de Ruby y guardar token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"correo\": \"ruby@senati.test\",\n  \"contrasena\": \"Ruby123\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/auth/login"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login correcto', function () { pm.response.to.have.status(200); });", "const data = pm.response.json();", "pm.collectionVariables.set('token', data.token);"] } }]
+    },
+    {
+      "name": "3. Correo repetido (409)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Ruby duplicada\",\n  \"correo\": \"ruby@senati.test\",\n  \"contrasena\": \"Ruby123\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/auth/registro"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Correo repetido responde 409', function () { pm.response.to.have.status(409); });"] } }]
+    },
+    {
+      "name": "4. Consultar equipos protegidos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/equipos"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Lista de equipos responde 200', function () { pm.response.to.have.status(200); });", "const equipos = pm.response.json().equipos;", "const disponible = equipos.find((equipo) => equipo.codigo === 'LAB-BAL-002');", "if (disponible) pm.collectionVariables.set('equipoId', String(disponible.id));"] } }]
+    },
+    {
+      "name": "5. Código de equipo repetido (409)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"LAB-MIC-001\",\n  \"nombre\": \"Equipo repetido\",\n  \"categoria\": \"Prueba\",\n  \"condicion_uso\": \"Bueno\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/equipos"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Código repetido responde 409', function () { pm.response.to.have.status(409); });"] } }]
+    },
+    {
+      "name": "6. Préstamo válido y guardar id (201)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"equipo_id\": {{equipoId}},\n  \"prestatario\": \"Estudiante de prueba\",\n  \"fecha_prestamo\": \"2026-11-02\",\n  \"fecha_prevista\": \"2026-11-09\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/prestamos"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Préstamo creado', function () { pm.response.to.have.status(201); });", "const data = pm.response.json();", "pm.collectionVariables.set('prestamoId', String(data.prestamo.id));"] } }]
+    },
+    {
+      "name": "7. Segundo préstamo activo del equipo (409)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"equipo_id\": {{equipoId}},\n  \"prestatario\": \"Segundo estudiante\",\n  \"fecha_prestamo\": \"2026-11-02\",\n  \"fecha_prevista\": \"2026-11-09\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/prestamos"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('No duplica préstamo activo', function () { pm.response.to.have.status(409); });"] } }]
+    },
+    {
+      "name": "8. Fecha prevista anterior a préstamo (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"equipo_id\": {{equipoId}},\n  \"prestatario\": \"Prueba de fecha\",\n  \"fecha_prestamo\": \"2026-11-09\",\n  \"fecha_prevista\": \"2026-11-02\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/prestamos"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Fechas incoherentes responden 400', function () { pm.response.to.have.status(400); });"] } }]
+    },
+    {
+      "name": "9. Devolver préstamo (200)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"fecha_devolucion\": \"2026-11-02\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/prestamos/{{prestamoId}}/devolucion"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Devolución registrada', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "10. Nuevo préstamo después de devolución (201)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"equipo_id\": {{equipoId}},\n  \"prestatario\": \"Tercer estudiante\",\n  \"fecha_prestamo\": \"2026-11-02\",\n  \"fecha_prevista\": \"2026-11-09\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/prestamos"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Equipo disponible nuevamente', function () { pm.response.to.have.status(201); });"] } }]
+    },
+    {
+      "name": "11. Equipo inexistente (404)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/equipos/999999"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Id inexistente responde 404', function () { pm.response.to.have.status(404); });"] } }]
+    }
+  ]
+}

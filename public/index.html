@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173b35">
+  <meta name="description" content="Control de equipos y préstamos de laboratorio">
+  <title>Laboratorio | Control de préstamos</title>
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script type="module" src="/js/app.js"></script>
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <main id="auth-screen" class="auth-screen">
+    <section class="auth-aside" aria-label="Presentación">
+      <a class="brand brand-light" href="/" aria-label="Inicio de Laboratorio">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span>LABORATORIO<span class="brand-subtitle">CONTROL DE ACTIVOS</span></span>
+      </a>
+      <div class="auth-aside-copy">
+        <span class="eyebrow eyebrow-light">SISTEMA DE PRÉSTAMOS</span>
+        <h1>Los equipos,<br>siempre en<br><em>buenas manos.</em></h1>
+        <p>Un espacio claro para cuidar el inventario y saber quién tiene cada equipo.</p>
+      </div>
+      <div class="aside-foot"><span class="aside-line"></span><span>GESTIÓN DE LABORATORIO · SENATI</span></div>
+    </section>
+
+    <section class="auth-main">
+      <div class="auth-card">
+        <div class="auth-heading">
+          <span class="eyebrow">BIENVENIDA, BIENVENIDO</span>
+          <h2>Acceso al sistema</h2>
+          <p>Ingresa para continuar con la gestión del laboratorio.</p>
+        </div>
+        <div class="auth-tabs" role="tablist" aria-label="Acceso o registro">
+          <button class="auth-tab is-active" type="button" role="tab" aria-selected="true" data-auth-tab="login">Iniciar sesión</button>
+          <button class="auth-tab" type="button" role="tab" aria-selected="false" data-auth-tab="register">Crear cuenta</button>
+        </div>
+        <form id="login-form" class="form-stack" novalidate>
+          <label class="field"><span>Correo electrónico</span><input name="correo" type="email" autocomplete="email" placeholder="nombre@instituto.edu" required></label>
+          <label class="field"><span>Contraseña</span><input name="contrasena" type="password" autocomplete="current-password" placeholder="Tu contraseña" required></label>
+          <button class="button button-primary button-wide" type="submit"><span>Entrar al sistema</span><span aria-hidden="true">→</span></button>
+        </form>
+        <form id="register-form" class="form-stack is-hidden" novalidate>
+          <label class="field"><span>Nombre completo</span><input name="nombre" type="text" autocomplete="name" placeholder="Nombre y apellido" required></label>
+          <label class="field"><span>Correo electrónico</span><input name="correo" type="email" autocomplete="email" placeholder="nombre@instituto.edu" required></label>
+          <label class="field"><span>Contraseña</span><input name="contrasena" type="password" autocomplete="new-password" minlength="6" placeholder="Mínimo 6 caracteres" required></label>
+          <button class="button button-primary button-wide" type="submit"><span>Crear mi cuenta</span><span aria-hidden="true">→</span></button>
+        </form>
+        <p class="auth-note">El acceso está protegido. Tus datos de contraseña no se guardan en este navegador.</p>
+      </div>
+      <footer class="auth-footer">CONTROL DE PRÉSTAMOS <span>·</span> LABORATORIOS</footer>
+    </section>
+  </main>
+
+  <div id="app-shell" class="app-shell is-hidden">
+    <aside id="sidebar" class="sidebar">
+      <a class="brand brand-dark" href="#inicio" aria-label="Ir al inicio">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span>LABORATORIO<span class="brand-subtitle">CONTROL DE ACTIVOS</span></span>
+      </a>
+      <div class="sidebar-label">ESPACIO DE TRABAJO</div>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <button class="nav-link is-active" type="button" data-view="inicio"><span class="nav-icon" aria-hidden="true">⌂</span>Inicio</button>
+        <button class="nav-link" type="button" data-view="equipos"><span class="nav-icon" aria-hidden="true">▦</span>Equipos</button>
+        <button class="nav-link" type="button" data-view="prestamos"><span class="nav-icon" aria-hidden="true">↗</span>Préstamos</button>
+        <button class="nav-link" type="button" data-view="historial"><span class="nav-icon" aria-hidden="true">◷</span>Historial</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note"><span class="note-dot"></span><span>Inventario bajo control</span></div>
+        <span class="sidebar-version">SISTEMA DE LABORATORIO · 01</span>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <button id="menu-toggle" class="icon-button menu-toggle" type="button" aria-label="Abrir navegación" aria-expanded="false"><span></span><span></span></button>
+        <div class="breadcrumb"><span>Laboratorio</span><span class="breadcrumb-slash">/</span><strong id="page-title">Inicio</strong></div>
+        <div class="account-area">
+          <span class="account-caption">SESIÓN ACTIVA</span>
+          <span id="user-name" class="account-name"></span>
+          <button id="logout-button" class="button button-quiet" type="button">Cerrar sesión <span aria-hidden="true">↗</span></button>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <section id="view-inicio" class="view-section">
+          <div class="page-heading page-heading-dashboard">
+            <div><span class="eyebrow">PANEL GENERAL</span><h1>Buen día, <span id="welcome-name">equipo</span>.</h1><p>Un vistazo rápido al estado de los equipos y sus préstamos.</p></div>
+            <div class="date-stamp"><span class="date-label">HOY</span><strong id="today-label"></strong></div>
+          </div>
+          <div class="stat-grid">
+            <article class="stat-card stat-card-total"><div class="stat-top"><span>Total de equipos</span><span class="stat-icon">▦</span></div><strong id="stat-total">—</strong><span class="stat-foot">en el inventario</span></article>
+            <article class="stat-card stat-card-available"><div class="stat-top"><span>Disponibles</span><span class="stat-icon">✓</span></div><strong id="stat-available">—</strong><span class="stat-foot">listos para préstamo</span></article>
+            <article class="stat-card stat-card-loaned"><div class="stat-top"><span>Prestados</span><span class="stat-icon">↗</span></div><strong id="stat-loaned">—</strong><span class="stat-foot">fuera del laboratorio</span></article>
+            <article class="stat-card stat-card-active"><div class="stat-top"><span>Préstamos activos</span><span class="stat-icon">◷</span></div><strong id="stat-active">—</strong><span class="stat-foot">pendientes de devolución</span></article>
+          </div>
+          <section class="dashboard-lower">
+            <div class="panel overdue-panel">
+              <div class="panel-heading"><div><span class="eyebrow">SEGUIMIENTO</span><h2>Préstamos vencidos</h2></div><span id="overdue-count" class="count-chip">0</span></div>
+              <div id="overdue-list" class="overdue-list"><p class="empty-state">Cargando préstamos activos…</p></div>
+            </div>
+            <div class="panel quick-panel">
+              <span class="eyebrow">ACCESOS RÁPIDOS</span><h2>¿Qué necesitas hacer?</h2>
+              <button class="quick-link" type="button" data-go="equipos"><span class="quick-number">01</span><span><strong>Revisar equipos</strong><small>Consulta el estado del inventario</small></span><span class="quick-arrow">→</span></button>
+              <button class="quick-link" type="button" data-go="prestamos"><span class="quick-number">02</span><span><strong>Registrar préstamo</strong><small>Entrega un equipo disponible</small></span><span class="quick-arrow">→</span></button>
+              <button class="quick-link" type="button" data-go="historial"><span class="quick-number">03</span><span><strong>Ver historial</strong><small>Consulta movimientos anteriores</small></span><span class="quick-arrow">→</span></button>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-equipos" class="view-section is-hidden">
+          <div class="page-heading"><div><span class="eyebrow">INVENTARIO</span><h1>Equipos</h1><p>Administra los equipos y revisa su disponibilidad.</p></div><button id="new-equipment-button" class="button button-primary" type="button"><span aria-hidden="true">＋</span> Nuevo equipo</button></div>
+          <div id="equipment-form-panel" class="panel form-panel is-hidden">
+            <div class="panel-heading"><div><span class="eyebrow" id="equipment-form-eyebrow">ALTA DE INVENTARIO</span><h2 id="equipment-form-title">Agregar equipo</h2></div><button id="cancel-equipment-button" class="icon-button close-button" type="button" aria-label="Cerrar formulario">×</button></div>
+            <form id="equipment-form" class="equipment-form" novalidate>
+              <label class="field"><span>Código</span><input name="codigo" maxlength="50" required placeholder="LAB-MIC-009"></label>
+              <label class="field"><span>Nombre del equipo</span><input name="nombre" maxlength="120" required placeholder="Microscopio óptico"></label>
+              <label class="field"><span>Categoría</span><input name="categoria" maxlength="80" required placeholder="Microscopía"></label>
+              <label class="field"><span>Condición de uso</span><input name="condicion_uso" maxlength="100" required placeholder="Bueno"></label>
+              <div class="form-actions"><button id="cancel-equipment-button-bottom" class="button button-outline" type="button">Cancelar</button><button class="button button-primary" type="submit" id="save-equipment-button">Guardar equipo</button></div>
+            </form>
+          </div>
+          <div class="toolbar panel toolbar-panel">
+            <label class="search-field"><span class="search-icon" aria-hidden="true">⌕</span><input id="equipment-search" type="search" placeholder="Buscar por código o nombre" aria-label="Buscar equipos"></label>
+            <label class="filter-field"><span>Categoría</span><select id="category-filter"><option value="">Todas</option></select></label>
+            <span id="equipment-count-label" class="result-count">Cargando…</span>
+          </div>
+          <div class="table-panel panel"><div class="table-scroll"><table><thead><tr><th>Equipo</th><th>Categoría</th><th>Condición</th><th>Estado</th><th class="actions-heading">Acciones</th></tr></thead><tbody id="equipment-table-body"><tr><td colspan="5" class="empty-cell">Cargando equipos…</td></tr></tbody></table></div></div>
+        </section>
+
+        <section id="view-prestamos" class="view-section is-hidden">
+          <div class="page-heading"><div><span class="eyebrow">MOVIMIENTOS</span><h1>Préstamos</h1><p>Registra entregas y da seguimiento a las devoluciones pendientes.</p></div><span class="live-label"><span class="live-dot"></span>ACTUALIZADO CON LA API</span></div>
+          <div class="loan-layout">
+            <section class="panel loan-form-panel">
+              <div class="panel-heading"><div><span class="eyebrow">NUEVO MOVIMIENTO</span><h2>Registrar préstamo</h2></div><span class="step-mark">01</span></div>
+              <form id="loan-form" class="form-stack" novalidate>
+                <label class="field"><span>Equipo disponible</span><select name="equipo_id" id="loan-equipment-select" required><option value="">Cargando equipos…</option></select><small id="loan-equipment-help" class="field-help">Solo aparecen equipos sin préstamos activos.</small></label>
+                <label class="field"><span>Nombre del prestatario</span><input name="prestatario" maxlength="120" required placeholder="Persona que recibe el equipo"></label>
+                <div class="field-row"><label class="field"><span>Fecha de préstamo</span><input name="fecha_prestamo" type="date" required></label><label class="field"><span>Fecha prevista</span><input name="fecha_prevista" type="date" required></label></div>
+                <div class="responsible-box"><span class="responsible-avatar" id="responsible-initials">—</span><span><small>RESPONSABLE DEL REGISTRO</small><strong id="responsible-name">Usuario autenticado</strong></span><span class="lock-mark" aria-label="Sale de tu sesión">●</span></div>
+                <button class="button button-primary button-wide" type="submit" id="create-loan-button">Registrar préstamo <span aria-hidden="true">→</span></button>
+              </form>
+            </section>
+            <section class="panel active-loans-panel">
+              <div class="panel-heading"><div><span class="eyebrow">EN CIRCULACIÓN</span><h2>Préstamos activos</h2></div><span id="active-loan-count" class="count-chip">0</span></div>
+              <div class="table-scroll active-table-scroll"><table><thead><tr><th>Equipo / prestatario</th><th>Fecha prevista</th><th></th></tr></thead><tbody id="active-loans-body"><tr><td colspan="3" class="empty-cell">Cargando préstamos…</td></tr></tbody></table></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-historial" class="view-section is-hidden">
+          <div class="page-heading"><div><span class="eyebrow">REGISTRO DE MOVIMIENTOS</span><h1>Historial</h1><p>Consulta quién recibió cada equipo y cuándo regresó.</p></div></div>
+          <div class="panel history-filter-panel">
+            <label class="field history-select-field"><span>Equipo</span><select id="history-equipment-select"><option value="">Selecciona un equipo</option></select></label>
+            <div class="history-filter-note"><span class="history-note-icon">◷</span><span>Se muestran préstamos activos y devueltos del equipo seleccionado.</span></div>
+          </div>
+          <div class="history-summary"><div><span class="eyebrow">MOVIMIENTOS ENCONTRADOS</span><strong id="history-count">—</strong></div><span id="history-equipment-name" class="history-equipment-name">Selecciona un equipo para consultar</span></div>
+          <div class="table-panel panel"><div class="table-scroll"><table><thead><tr><th>Prestatario</th><th>Responsable</th><th>Fecha de préstamo</th><th>Fecha prevista</th><th>Devolución</th><th>Estado</th></tr></thead><tbody id="history-table-body"><tr><td colspan="6" class="empty-cell">Selecciona un equipo para ver su historial.</td></tr></tbody></table></div></div>
+        </section>
+      </main>
+      <footer class="workspace-footer"><span>CONTROL DE PRÉSTAMOS</span><span>GESTIÓN DE EQUIPOS DE LABORATORIO</span></footer>
+    </div>
+    <button id="sidebar-scrim" class="sidebar-scrim" type="button" aria-label="Cerrar navegación"></button>
+  </div>
+</body>
+</html>
